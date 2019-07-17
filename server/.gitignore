@@ -1,0 +1,6 @@
+## grunt/npm stuff
+/node_modules
+
+
+## stupid macs
+.DS_Store
