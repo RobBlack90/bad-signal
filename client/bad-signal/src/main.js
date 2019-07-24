@@ -5,18 +5,14 @@ import VueSocketIO from 'vue-socket.io'
 import Home from './components/Home.vue'
 import ChatRoom from './components/ChatRoom.vue'
 import Axios from 'axios'
-
-
-import BootstrapVue from 'bootstrap-vue'
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+import './styles/app.scss'
 
  // eslint-disable-next-line
 console.log(process.env.API_ENDPOINT)
 Axios.defaults.baseURL = process.env.API_ENDPOINT
 
 Vue.use(Router)
-Vue.use(BootstrapVue)
+// Vue.use(BootstrapVue)
 
 
 Vue.use(new VueSocketIO({
