@@ -36,28 +36,28 @@
 
       <div class="chat-history">
         <ul>
-          <li class="clearfix" v-for="event in eventList" :key="event._id">
-            <div v-if="event.user">
-              <div class="message-data align-right">
-                <span class="message-data-time">{{formatDate(event.created)}}</span> &nbsp; &nbsp;
-                <span v-if="event.user" class="message-data-name">
+          <li v-for="event in eventList" :key="event._id">
+            <div v-if="event.user" class="event-message">
+              <div class="message-data">
+                <span v-if="!isCurrentUser(event.user)" class="message-data-name">
+                  <i class="fa fa-circle" :class="{'online': event.user.isOnline}"></i>
                   {{event.user.name}}
-                  <i class="fa fa-circle me"></i>
                 </span>
               </div>
               <div class="user-message" :class="{ 'reverse': isCurrentUser(event.user) }">
                 <img :src="userAvatar(event.user._id)" alt="avatar" />
                 <div :class="[isCurrentUser(event.user) ? 'my-message' : 'other-message']">{{event.message}}</div>
               </div>
+              <div class="message-data-time" :class="{'align-right': isCurrentUser(event.user)}">{{formatDate(event.created)}}</div>
             </div>
-            <div v-else>
+            <div v-else class="event-action">
               {{event.message}}
             </div>
           </li>
         </ul>
       </div>
 
-      <form class="chat-message clearfix" @submit.prevent="sendMessage">
+      <form class="chat-message" @submit.prevent="sendMessage">
         <input v-model="message" class="chat-input" placeholder="What's up?" />
         <button type="submit">Send</button>
       </form>
@@ -67,8 +67,8 @@
 
 <script>
 import { users } from "@/services/api.js";
+import { events } from '@/services/api.js'
 import moment from "moment";
-// import { events } from '@/services/api.js'
 
 export default {
   components: {},
@@ -110,6 +110,8 @@ export default {
   },
   async mounted() {
     this.users = await users.list();
+    const previousEvents = await events.list();
+    this.eventList = previousEvents.reverse();
   },
   computed: {
     filteredUsers: function() {
@@ -262,7 +264,6 @@ export default {
     }
 
     .chat-about {
-      float: left;
       padding-left: 10px;
       margin-top: 6px;
     }
@@ -290,8 +291,18 @@ export default {
     overflow-y: scroll;
     max-height: 630px; //TODO: this sucks.
 
+    .event-message {
+      margin-bottom: 20px;
+    }
+
+    .event-action {
+      display: flex;
+      justify-content: center;
+      margin: 5px 0;
+    }
+
     .message-data {
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
 
     .message-data-time {
@@ -306,7 +317,7 @@ export default {
       justify-content: flex-start;
       align-items: center;
       align-content: stretch;
-      margin-bottom: 30px;
+      margin-bottom: 5px;
 
       &.reverse {
         flex-direction: row-reverse;
@@ -320,7 +331,7 @@ export default {
         color: white;
         padding: 18px 20px;
         line-height: 26px;
-        font-size: 16px;
+        font-size: 18px;
         border-radius: 7px;
         position: relative;
 
@@ -403,6 +414,10 @@ export default {
   }
 }
 
+.fa-circle {
+  color: $gray;
+}
+
 .online,
 .offline,
 .me {
@@ -414,32 +429,8 @@ export default {
   color: $green;
 }
 
-.offline {
-  color: $orange;
-}
-
-.me {
-  color: $blue;
-}
-
-.align-left {
-  text-align: left;
-}
-
 .align-right {
   text-align: right;
 }
 
-.float-right {
-  float: right;
-}
-
-.clearfix:after {
-  visibility: hidden;
-  display: block;
-  font-size: 0;
-  content: " ";
-  clear: both;
-  height: 0;
-}
 </style>
