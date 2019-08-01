@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import App from './App.vue'
 import VueSocketIO from 'vue-socket.io'
 import Home from './components/Home.vue'
-import ChatRoom from './components/ChatRoom.vue'
+import Room from './components/Room.vue'
 import Axios from 'axios'
 import './styles/app.scss'
 
@@ -12,7 +12,6 @@ console.log(process.env.API_ENDPOINT)
 Axios.defaults.baseURL = process.env.API_ENDPOINT
 
 Vue.use(Router)
-// Vue.use(BootstrapVue)
 
 
 Vue.use(new VueSocketIO({
@@ -22,8 +21,7 @@ Vue.use(new VueSocketIO({
 
 const routes = [
   {path: '/', component: Home},
-  {path: '/room', redirect: '/'},
-  {path: '/room/:id', component: ChatRoom}
+  {path: '/room', component: Room, props: true}
 ]
 
 const router = new Router({

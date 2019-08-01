@@ -13,13 +13,14 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
   html, body {
       margin: 0;
       height: 100%;
   }
   body {
     overflow: hidden;
+    background: #444753;
   }
   #app {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
