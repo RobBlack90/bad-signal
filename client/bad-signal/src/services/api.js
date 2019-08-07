@@ -7,8 +7,8 @@ const instance = axios.create({
 
 async function list(params) {
   try {
-    const response = await instance.get(`/${this.path}`, {params})
-    return response.data
+    const { data } = await instance.get(`/${this.path}`, {params})
+    return data
   } catch (error) {
     throw Error(error)
   }
@@ -16,8 +16,8 @@ async function list(params) {
 
 async function show(id) {
   try {
-    const response = await instance.get(`/${this.path}/${id}`)
-    return response.data
+    const { data } = await instance.get(`/${this.path}/${id}`)
+    return data
   } catch (error) {
     throw Error(error)
   }
@@ -25,8 +25,8 @@ async function show(id) {
 
 async function create(body) {
   try {
-    const response = await instance.post(`/${this.path}`, body)
-    return response.data
+    const { data } = await instance.post(`/${this.path}`, body)
+    return data
   } catch (error) {
     throw Error(error)
   }
@@ -34,7 +34,8 @@ async function create(body) {
 
 async function update(id, body) {
   try {
-    return await instance.put(`/${this.path}/${id}`, body)
+    const { data } = await instance.put(`/${this.path}/${id}`, body)
+    return data
   } catch (error) {
     throw Error(error)
   }

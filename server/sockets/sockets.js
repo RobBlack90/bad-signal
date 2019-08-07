@@ -20,9 +20,7 @@ module.exports = function (server) {
           const joinedEvent = await new Event({ message : `${user.name} has entered the chat.`, type: 'event'}).save()
           console.log(joinedEvent.message)
           io.emit('newEvent', joinedEvent)
-  
-          const users = await User.find({isOnline:true})
-          io.emit('currentUsers', users)
+          io.emit('userChange', user)
       })
   
       socket.on('userLeft', async (user) => {
@@ -32,9 +30,7 @@ module.exports = function (server) {
           const leftEvent = await new Event({ message : `${user.name} has left the chat.`, type: 'event'}).save()
           console.log(leftEvent.message)
           io.emit('newEvent', leftEvent)
-  
-          const users = await User.find({isOnline:true})
-          io.emit('currentUsers', users)
+          io.emit('userChange', user)
       })
   
       socket.on('eventSent', async (event) => {

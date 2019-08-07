@@ -15,7 +15,7 @@
       </div>
       <div v-else class="people-list">
         <ul class="list">
-          <li class="user-grid" v-for="user in offlineUsers" :key="user._id" @click="connectUser(user)">
+          <li class="user-grid" v-for="user in offlineUsers" :key="user._id" @click="connect(user)">
             <img :src="userAvatar(user._id)" alt="avatar" />
             <div class="about">
               <div class="name">
@@ -32,6 +32,7 @@
 
 <script>
 import { users } from "@/services/api.js";
+import UserStore from "../stores/UserStore.js"
 
 export default {
 	components: {
@@ -45,6 +46,9 @@ export default {
     }
   },
   async mounted() {
+    if(UserStore.getCurrentUser()) {
+      this.$router.push({ path: 'Room' })
+    }
     this.offlineUsers = await users.list({ isOnline: false });
   },
   computed: {
@@ -56,8 +60,23 @@ export default {
     userAvatar: function(id) {
       return `https://api.adorable.io/avatars/60/${id}.png`;
     },
-    connect() {
-
+    async connect(user) {
+      if (!user) {
+        let currentUser = await users.create({ name: this.name })
+        UserStore.setCurrentUser(currentUser)
+      } else {
+        let userCheck = await users.show(user._id)
+        if (!userCheck.isOnline) {
+          UserStore.setCurrentUser(user)
+        } else {
+          // eslint-disable-next-line
+          console.log("TODO: Sorry that dude is now Online.")
+          const foundIndex = this.offlineUsers.findIndex(u => u._id === user._id)
+          this.offlineUsers.splice(foundIndex, 1)
+          return
+        }
+      }
+      this.$router.push({ path: 'Room' })
     }
 	}
 }

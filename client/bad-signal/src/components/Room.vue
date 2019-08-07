@@ -6,7 +6,7 @@
         <i class="fa fa-search"></i>
       </div>
       <ul class="list">
-        <li class="user-grid" v-for="user in users" :key="user._id" @click="connectUser(user)">
+        <li class="user-grid" v-for="user in filteredUsers" :key="user._id">
           <img :src="userAvatar(user._id)" alt="avatar" />
           <div class="about">
             <div class="name">
@@ -15,7 +15,7 @@
               </span>
               {{user.name}}
             </div>
-            <p class="status">Maybe a status here?</p>
+            <p class="status">{{user.status}}</p>
           </div>
         </li>
       </ul>
@@ -24,13 +24,14 @@
     <div class="chat" v-if="currentUser">
       <div class="chat-header">
         <img :src="userAvatar(currentUser._id)" alt="avatar" />
-
         <div class="chat-about">
           <div class="chat-with">{{currentUser.name}}</div>
-          <div class="chat-num-messages">Maybe a changeable user status here?</div>
+          <form class="chat-num-messages" @submit.prevent="updateCurrentUser()">
+            <input v-model="currentUser.status" type="text" maxlength="20" placeholder="What's your status?"/>
+          </form>
         </div>
         <div>
-          <i class="fa fa-star"></i>
+            <i class="fa fa-sign-out" @click="signOut()"></i>
         </div>
       </div>
 
@@ -40,7 +41,7 @@
             <div v-if="event.user" class="event-message">
               <div class="message-data">
                 <span v-if="!isCurrentUser(event.user)" class="message-data-name">
-                  <i class="fa fa-circle" :class="{'online': event.user.isOnline}"></i>
+                  <i class="fa fa-user"></i>
                   {{event.user.name}}
                 </span>
               </div>
@@ -66,9 +67,11 @@
 </template>
 
 <script>
-import { users } from "@/services/api.js";
+import Vue from 'vue'
+import { users } from "@/services/api.js"
 import { events } from '@/services/api.js'
-import moment from "moment";
+import UserStore from "../stores/UserStore.js"
+import moment from "moment"
 
 export default {
   name: "Room",
@@ -94,16 +97,12 @@ export default {
       this.isConnected = false;
     },
     newEvent(event) {
-      // eslint-disable-next-line
-      console.log("this thing on?");
       this.eventList.push(event);
     },
-    currentUsers(users) {
-      // eslint-disable-next-line
-      console.log("users");
-      // eslint-disable-next-line
-      console.log(users);
-      this.userList = users;
+    userChange(user) {
+      const foundIndex = this.userList.findIndex(u => u._id === user._id);
+      foundIndex > 0 ? Vue.set(this.userList, foundIndex, user) : this.userList.push(user)
+      //TODO SEE IF THIS WORKS
     }
   },
   created() {
@@ -111,16 +110,22 @@ export default {
     window.addEventListener("beforeunload", this.disconnectUser);
   },
   async mounted() {
-    // eslint-disable-next-line
-    console.log(this.user)
-    this.users = await users.list();
-    const previousEvents = await events.list();
-    this.eventList = previousEvents.reverse();
+    if(!UserStore.getCurrentUser()) {
+      this.$router.push({name: 'Home'})
+    }
+    this.currentUser = UserStore.getCurrentUser()
+    this.userList = await users.list()
+    this.connectUser()
+    const previousEvents = await events.list()
+    this.eventList = previousEvents.reverse()
+},
+  updated() {
+    this.scrollToBottom() 
   },
   computed: {
     filteredUsers: function() {
       // eslint-disable-next-line
-      console.log("filtering");
+      console.log("filtering")
       return this.userList.filter(user => user._id !== this.currentUser._id);
     },
     isOwnEvent: function(event) {
@@ -128,20 +133,14 @@ export default {
     }
   },
   methods: {
-    async connectUser(user) {
-      if (!user) {
-        this.currentUser = await users.create({ name: this.name });
-      } else {
-        this.currentUser = user;
-      }
+    async connectUser() {
+      // eslint-disable-next-line
+      console.log("connecting")
       this.$socket.emit("userJoined", this.currentUser);
       this.currentUser.isOnline = true;
-      this.name = "";
     },
     disconnectUser() {
-      if (this.currentUser.name) {
-        this.$socket.emit("userLeft", this.currentUser);
-      }
+      this.$socket.emit("userLeft", this.currentUser);
     },
     sendMessage() {
       let newMessage = {
@@ -163,6 +162,24 @@ export default {
     },
     async setOfflineUsers() {
       this.offlineUsers = await users.list({ isOnline: false });
+    },
+    async updateCurrentUser() {
+      // eslint-disable-next-line
+      console.log('TODO IMPLEMENT ON BACKEND')
+      this.currentUser = await users.update(this.currentUser._id, this.currentUser)
+    },
+    signOut() {
+      UserStore.setCurrentUser(null)
+      this.disconnectUser()
+      this.$router.push({name: 'Home'})
+    },
+    scrollToBottom() {
+      let container = document.querySelector(".chat-history");
+      let scrollHeight = container.scrollHeight;
+      container.scrollTop = scrollHeight;
+      // window.scrollTo(0,document.querySelector(".chat-history").scrollHeight);
+
+
     }
   }
 };
@@ -263,10 +280,6 @@ export default {
       padding: 20px;
       border-bottom: 2px solid white;
 
-      img {
-        float: left;
-      }
-
       .chat-about {
         padding-left: 10px;
         margin-top: 6px;
@@ -277,15 +290,34 @@ export default {
         font-size: 16px;
       }
 
-      .chat-num-messages {
-        color: $gray;
+      .chat-num-messages {        
+        input {
+          color: $gray;
+          cursor: pointer;
+          background-color: transparent;
+          border: none;
+          border-radius: 0;
+          outline: none;
+          width: 100%;
+          font-size: 16px;
+          margin: 5px 0;
+          padding: 0;
+        }
       }
 
-      .fa-star {
-        float: right;
-        color: #d8dadf;
-        font-size: 20px;
+      .fa-sign-out {
+        display: flex;
+        justify-content: center;
+        color: lighten($gray, 8%);
+        font-size: 30px;
         margin-top: 12px;
+        cursor: pointer;
+        transition: all .1s ease-in-out;
+
+        &:hover {
+          color: lighten($gray, 16%);
+
+        }
       }
     }
 
@@ -307,6 +339,10 @@ export default {
 
       .message-data {
         margin-bottom: 10px;
+
+        i {
+          color: lighten($gray, 8%);
+        }
       }
 
       .message-data-time {

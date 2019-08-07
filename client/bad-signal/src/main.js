@@ -20,8 +20,8 @@ Vue.use(new VueSocketIO({
 }))
 
 const routes = [
-  {path: '/', component: Home},
-  {path: '/room', component: Room, props: true}
+  {path: '/', name: 'Home', component: Home},
+  {path: '/room', name: 'Room', component: Room, props: true}
 ]
 
 const router = new Router({
