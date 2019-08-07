@@ -177,9 +177,6 @@ export default {
       let container = document.querySelector(".chat-history");
       let scrollHeight = container.scrollHeight;
       container.scrollTop = scrollHeight;
-      // window.scrollTo(0,document.querySelector(".chat-history").scrollHeight);
-
-
     }
   }
 };
