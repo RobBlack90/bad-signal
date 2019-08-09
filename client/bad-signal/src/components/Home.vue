@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { users } from "@/services/api.js";
+import { users } from "@/services/api.js"
 import UserStore from "../stores/UserStore.js"
 
 export default {
@@ -44,11 +44,26 @@ export default {
 
     }
   },
+  sockets: {
+    userChange(user) {
+      if (user.isOnline) {
+        const foundIndex = this.offlineUsers.findIndex(u => u._id === user._id)
+        if (foundIndex >= 0) {
+          this.offlineUsers.splice(foundIndex, 1)
+        }
+      } else {
+        const foundIndex = this.offlineUsers.findIndex(u => u._id === user._id)
+        if (foundIndex === -1) {
+          this.offlineUsers.push(user)
+        }
+      }
+    }
+  },
   async mounted() {
     if(UserStore.getCurrentUser()) {
       this.$router.push({ path: 'Room' })
     }
-    this.offlineUsers = await users.list({ isOnline: false });
+    this.offlineUsers = await users.list({ isOnline: false })
   },
   computed: {
     isNewUser: function() {
@@ -57,7 +72,7 @@ export default {
   },
 	methods: {
     userAvatar: function(id) {
-      return `https://api.adorable.io/avatars/60/${id}.png`;
+      return `https://api.adorable.io/avatars/60/${id}.png`
     },
     async connect(user) {
       if (!user) {
@@ -68,8 +83,6 @@ export default {
         if (!userCheck.isOnline) {
           UserStore.setCurrentUser(user)
         } else {
-          // eslint-disable-next-line
-          console.log("TODO: Sorry that dude is now Online.")
           const foundIndex = this.offlineUsers.findIndex(u => u._id === user._id)
           this.offlineUsers.splice(foundIndex, 1)
           return
@@ -101,7 +114,7 @@ export default {
     background: $white;
     border-radius: 5px;
     padding: 10px;
-    min-height: 420px;
+    min-height: 225px;
     width: 280px;
 
     input {

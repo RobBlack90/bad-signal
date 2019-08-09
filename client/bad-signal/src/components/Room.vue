@@ -86,27 +86,25 @@ export default {
       userList: [],
       eventList: [],
       offlineUsers: []
-    };
+    }
   },
   sockets: {
     connect() {
-      this.isConnected = true;
+      this.isConnected = true
     },
     disconnect() {
-      this.isConnected = false;
+      this.isConnected = false
     },
     newEvent(event) {
-      this.eventList.push(event);
+      this.eventList.push(event)
     },
     userChange(user) {
-      const foundIndex = this.userList.findIndex(u => u._id === user._id);
-      foundIndex > 0 ? Vue.set(this.userList, foundIndex, user) : this.userList.push(user)
-      //TODO SEE IF THIS WORKS
+      const foundIndex = this.userList.findIndex(u => u._id === user._id)
+      foundIndex >= 0 ? Vue.set(this.userList, foundIndex, user) : this.userList.push(user)
     }
   },
   created() {
-    // document.addEventListener("beforeunload", () => this.disconnectUser)
-    window.addEventListener("beforeunload", this.disconnectUser);
+    window.addEventListener("beforeunload", this.disconnectUser)
   },
   async mounted() {
     if(!UserStore.getCurrentUser()) {
@@ -123,49 +121,43 @@ export default {
   },
   computed: {
     filteredUsers: function() {
-      // eslint-disable-next-line
-      console.log("filtering")
-      return this.userList.filter(user => user._id !== this.currentUser._id);
+      return this.userList.filter(user => user._id !== this.currentUser._id)
     },
     isOwnEvent: function(event) {
-      return event._id === this.currentUser._id;
+      return event._id === this.currentUser._id
     }
   },
   methods: {
     async connectUser() {
-      // eslint-disable-next-line
-      console.log("connecting")
-      this.$socket.emit("userJoined", this.currentUser);
-      this.currentUser.isOnline = true;
+      this.currentUser.isOnline = true
+      this.$socket.emit("userUpdated", this.currentUser)
     },
     disconnectUser() {
-      this.$socket.emit("userLeft", this.currentUser);
+      this.currentUser.isOnline = false
+      this.$socket.emit("userUpdated", this.currentUser)
     },
     sendMessage() {
       let newMessage = {
         message: this.message,
-        type: "message",
         user: this.currentUser
       };
-      this.$socket.emit("eventSent", newMessage);
+      this.$socket.emit("eventSent", newMessage)
       this.message = "";
     },
     userAvatar: function(id, size = 60) {
-      return `https://api.adorable.io/avatars/${size}/${id}.png`;
+      return `https://api.adorable.io/avatars/${size}/${id}.png`
     },
     isCurrentUser(user) {
-      return this.currentUser ? user._id === this.currentUser._id : false;
+      return this.currentUser ? user._id === this.currentUser._id : false
     },
     formatDate(date) {
-      return moment(date).format("h:mm:ss a");
+      return moment(date).format("h:mm:ss a")
     },
     async setOfflineUsers() {
-      this.offlineUsers = await users.list({ isOnline: false });
+      this.offlineUsers = await users.list({ isOnline: false })
     },
     async updateCurrentUser() {
-      // eslint-disable-next-line
-      console.log('TODO IMPLEMENT ON BACKEND')
-      this.currentUser = await users.update(this.currentUser._id, this.currentUser)
+      this.$socket.emit("userUpdated", this.currentUser)
     },
     signOut() {
       UserStore.setCurrentUser(null)
@@ -173,12 +165,12 @@ export default {
       this.$router.push({name: 'Home'})
     },
     scrollToBottom() {
-      let container = document.querySelector(".chat-history");
-      let scrollHeight = container.scrollHeight;
-      container.scrollTop = scrollHeight;
+      let container = document.querySelector(".chat-history")
+      let scrollHeight = container.scrollHeight
+      container.scrollTop = scrollHeight
     }
   }
-};
+}
 </script>
 <style lang="scss">
 
