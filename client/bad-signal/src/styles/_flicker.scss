@@ -1,0 +1,109 @@
+//Stol- eh, borrowed, yeah borrowed from https://codemyui.com/css-flickering-effect-neon-text/
+
+.neon {
+  color: $green;
+  font-family: 'Yesteryear', cursive;
+  font-size: 100px;
+  animation: text-flicker 5s linear infinite;
+}
+
+.neon-offset {
+  animation: letter-flicker 2s linear infinite;
+}
+
+@keyframes text-flicker {
+  0% {
+    opacity:0.1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  
+  2% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  8% {
+    opacity:0.1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  9% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  12% {
+    opacity:0.1;
+    text-shadow: 0px 0px $green;
+  }
+  20% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green
+  }
+  25% {
+    opacity:0.3;
+    text-shadow: 0px 0px 29px $green
+  }
+  30% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green
+  }
+  
+  70% {
+    opacity:0.7;
+    text-shadow: 0px 0px 29px $green
+  }
+  
+  72% {
+    opacity:0.2;
+    text-shadow:0px 0px 29px $green
+  }
+  
+  77% {
+    opacity:.9;
+    text-shadow: 0px 0px 29px $green
+  }
+  100% {
+    opacity:.9;
+    text-shadow: 0px 0px 29px $green
+  }
+}
+
+@keyframes letter-flicker {
+  0% {
+    opacity:0.1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  2% {
+    opacity:0.1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  4% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  
+  
+  19% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  21% {
+    opacity:0.1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  23% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  
+  80% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green;
+  }
+  83% {
+    opacity:0.4;
+    text-shadow: 0px 0px 29px $green;
+  }
+  87% {
+    opacity:1;
+    text-shadow: 0px 0px 29px $green;
+  }
+}

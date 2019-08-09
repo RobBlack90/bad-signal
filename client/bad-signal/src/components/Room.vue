@@ -60,7 +60,6 @@
 
       <form class="chat-message" @submit.prevent="sendMessage">
         <input v-model="message" class="chat-input" placeholder="What's up?" />
-        <button type="submit">Send</button>
       </form>
     </div>
   </div>
@@ -304,7 +303,7 @@ export default {
 
       .fa-sign-out {
         display: flex;
-        justify-content: center;
+        justify-content: flex-end;
         color: lighten($gray, 8%);
         font-size: 30px;
         margin-top: 12px;
@@ -432,21 +431,6 @@ export default {
         font-size: 16px;
         color: gray;
         cursor: pointer;
-      }
-
-      button {
-        float: right;
-        color: $blue;
-        font-size: 16px;
-        text-transform: uppercase;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
-        background: $white;
-
-        &:hover {
-          color: darken($blue, 7%);
-        }
       }
     }
   }

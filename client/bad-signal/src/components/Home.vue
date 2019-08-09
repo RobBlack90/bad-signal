@@ -1,8 +1,7 @@
 <template>
 	<div class="login-container">
-    <div class="title">
-      <h1>BAD SIGNAL</h1>
-      <h2>...sick logo, eh?</h2>
+    <div class="title neon">
+      <h1>Bad Si<span class="neon-offset">g</span>nal</h1>
     </div>
     <div class="login">
       <div class="options">
@@ -84,24 +83,18 @@ export default {
 <style lang="scss">
 
 @import "../styles/colors.scss";
+@import "../styles/flicker.scss";
 
 .login-container {
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: center;
   flex-direction: column;
 
   .title {
-    color: $white;
-    font-size: 70px;
-    font-family: 'Roboto', sans-serif;
     text-align: center;
-
-    h2 {
-      font-size: 25px;
-      color: darken($white, 20%)
-    }
+    margin: 20px;
   }
 
   .login {
