@@ -19,4 +19,4 @@ const server = app.listen(5000,() => {
   console.log("Connection on PORT 5000")   
 })
 
-sockets(server)
+sockets.init(server)

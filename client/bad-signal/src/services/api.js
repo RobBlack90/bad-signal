@@ -60,5 +60,5 @@ function setPath (pathParam) {
   }
 }
 
-export const users = setPath('users')
-export const events = setPath('events')
+export const Users = setPath('users')
+export const Events = setPath('events')

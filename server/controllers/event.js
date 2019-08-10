@@ -1,17 +1,25 @@
 
-let Event = require('../models/event')
+const Event = require('../models/event')
+const User = require('../models/user')
+const socketServer = require('../sockets/sockets')
+
 
 module.exports = {
     async find(req, res) {
-        let result = await Event.find(req.query).sort({created: 'desc'}).limit(50).populate('user')
+        const result = await Event.find(req.query).sort({created: 'desc'}).limit(50).populate('user')
         res.status(200).send(result)
     },
     async create(req, res) {
         const newEvent = new Event(req.body)
-        res.status(200).send(await newEvent.save())
+        const result = await newEvent.save()
+        const io = socketServer.getServer()
+        
+        result.user = result.user ? await User.findById(result.user) : null
+        io.emit('newEvent', result)
+        return res.status(200).send(await newEvent.save())
     },
     async remove(req, res) {
-        let event = await Event.findById(req.params.id)
+        const event = await Event.findById(req.params.id)
         if (!event) {
             return res.status(404).send({error: 'Event not found.'})
         }

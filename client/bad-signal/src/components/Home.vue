@@ -20,7 +20,7 @@
               <div class="name">
                 {{user.name}}
               </div>
-              <p class="status">Maybe a status here?</p>
+              <p class="status">{{user.status}}</p>
             </div>
           </li>
         </ul>
@@ -30,7 +30,8 @@
 </template>
 
 <script>
-import { users } from "@/services/api.js"
+import Vue from 'vue'
+import { Users } from "@/services/api.js"
 import UserStore from "../stores/UserStore.js"
 
 export default {
@@ -38,36 +39,30 @@ export default {
 	},
   data () {
     return {
-      offlineUsers: [],
+      users: [],
       currentTab: 'new',
       name: ""
 
     }
   },
   sockets: {
-    userChange(user) {
-      if (user.isOnline) {
-        const foundIndex = this.offlineUsers.findIndex(u => u._id === user._id)
-        if (foundIndex >= 0) {
-          this.offlineUsers.splice(foundIndex, 1)
-        }
-      } else {
-        const foundIndex = this.offlineUsers.findIndex(u => u._id === user._id)
-        if (foundIndex === -1) {
-          this.offlineUsers.push(user)
-        }
-      }
+    userChange(changedUser) {
+      const foundIndex = this.users.findIndex(user => user._id === changedUser._id)
+      foundIndex >= 0 ? Vue.set(this.users, foundIndex, changedUser) : this.users.push(changedUser)
     }
   },
   async mounted() {
     if(UserStore.getCurrentUser()) {
       this.$router.push({ path: 'Room' })
     }
-    this.offlineUsers = await users.list({ isOnline: false })
+    this.users = await Users.list()
   },
   computed: {
     isNewUser: function() {
       return this.currentTab === 'new'
+    },
+    offlineUsers: function() {
+      return this.users.filter(user => !user.isOnline)
     }
   },
 	methods: {
@@ -76,15 +71,15 @@ export default {
     },
     async connect(user) {
       if (!user) {
-        let currentUser = await users.create({ name: this.name })
+        let currentUser = await Users.create({ name: this.name })
         UserStore.setCurrentUser(currentUser)
       } else {
-        let userCheck = await users.show(user._id)
+        let userCheck = await Users.show(user._id)
         if (!userCheck.isOnline) {
           UserStore.setCurrentUser(user)
         } else {
-          const foundIndex = this.offlineUsers.findIndex(u => u._id === user._id)
-          this.offlineUsers.splice(foundIndex, 1)
+          const foundIndex = this.users.findIndex(offlineUser => offlineUser._id === user._id)
+          this.users.splice(foundIndex, 1)
           return
         }
       }

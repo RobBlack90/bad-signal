@@ -1,90 +1,33 @@
 <template>
   <div class="chat-container">
-    <div class="people-list" id="people-list">
-      <div class="search">
-        <input type="text" placeholder="search" />
-        <i class="fa fa-search"></i>
-      </div>
-      <ul class="list">
-        <li class="user-grid" v-for="user in filteredUsers" :key="user._id">
-          <img :src="userAvatar(user._id)" alt="avatar" />
-          <div class="about">
-            <div class="name">
-              <span class="status">
-                <i class="fa fa-circle" :class="{'online': user.isOnline}"></i>
-              </span>
-              {{user.name}}
-            </div>
-            <p class="status">{{user.status}}</p>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <div class="chat" v-if="currentUser">
-      <div class="chat-header">
-        <img :src="userAvatar(currentUser._id)" alt="avatar" />
-        <div class="chat-about">
-          <div class="chat-with">{{currentUser.name}}</div>
-          <form class="chat-num-messages" @submit.prevent="updateCurrentUser()">
-            <input v-model="currentUser.status" type="text" maxlength="20" placeholder="What's your status?"/>
-          </form>
-        </div>
-        <div>
-            <i class="fa fa-sign-out" @click="signOut()"></i>
-        </div>
-      </div>
-
-      <div class="chat-history">
-        <ul>
-          <li v-for="event in eventList" :key="event._id">
-            <div v-if="event.user" class="event-message">
-              <div class="message-data">
-                <span v-if="!isCurrentUser(event.user)" class="message-data-name">
-                  <i class="fa fa-user"></i>
-                  {{event.user.name}}
-                </span>
-              </div>
-              <div class="user-message" :class="{ 'reverse': isCurrentUser(event.user) }">
-                <img :src="userAvatar(event.user._id)" alt="avatar" />
-                <div :class="[isCurrentUser(event.user) ? 'my-message' : 'other-message']">{{event.message}}</div>
-              </div>
-              <div class="message-data-time" :class="{'align-right': isCurrentUser(event.user)}">{{formatDate(event.created)}}</div>
-            </div>
-            <div v-else class="event-action">
-              {{event.message}}
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <form class="chat-message" @submit.prevent="sendMessage">
-        <input v-model="message" class="chat-input" placeholder="What's up?" />
-      </form>
-    </div>
+    <user-nav :users="filteredUsers" />
+    <chat :currentUser="currentUser" :events="events" v-on:signOut="signOut"/>
   </div>
 </template>
 
 <script>
+
 import Vue from 'vue'
-import { users } from "@/services/api.js"
-import { events } from '@/services/api.js'
+import { Users } from "@/services/api.js"
+import { Events } from '@/services/api.js'
 import UserStore from "../stores/UserStore.js"
 import moment from "moment"
+import UserNav from './UserNav'
+import Chat from './Chat'
 
 export default {
   name: "Room",
-  props: ['user'],
-  components: {},
+  components: {
+    Chat,
+    UserNav
+  },
   data() {
     return {
       isConnected: false,
-      name: "",
       message: "",
-      currentUser: null,
+      currentUser: {},
       users: [],
-      userList: [],
-      eventList: [],
+      events: [],
       offlineUsers: []
     }
   },
@@ -96,11 +39,11 @@ export default {
       this.isConnected = false
     },
     newEvent(event) {
-      this.eventList.push(event)
+      this.events.push(event)
     },
-    userChange(user) {
-      const foundIndex = this.userList.findIndex(u => u._id === user._id)
-      foundIndex >= 0 ? Vue.set(this.userList, foundIndex, user) : this.userList.push(user)
+    userChange(changedUser) {
+      const foundIndex = this.users.findIndex(user => user._id === changedUser._id)
+      foundIndex >= 0 ? Vue.set(this.users, foundIndex, changedUser) : this.users.push(changedUser)
     }
   },
   created() {
@@ -111,63 +54,49 @@ export default {
       this.$router.push({name: 'Home'})
     }
     this.currentUser = UserStore.getCurrentUser()
-    this.userList = await users.list()
+    this.users = await Users.list()
     this.connectUser()
-    const previousEvents = await events.list()
-    this.eventList = previousEvents.reverse()
-},
-  updated() {
-    this.scrollToBottom() 
+    const previousEvents = await Events.list()
+    this.events = previousEvents.reverse()
   },
   computed: {
     filteredUsers: function() {
-      return this.userList.filter(user => user._id !== this.currentUser._id)
-    },
-    isOwnEvent: function(event) {
-      return event._id === this.currentUser._id
+      return this.users.filter(user => !this.isCurrentUser(user))
     }
   },
   methods: {
-    async connectUser() {
+    connectUser() {
       this.currentUser.isOnline = true
-      this.$socket.emit("userUpdated", this.currentUser)
+      Users.update(this.currentUser._id, this.currentUser)
     },
     disconnectUser() {
       this.currentUser.isOnline = false
       this.$socket.emit("userUpdated", this.currentUser)
     },
     sendMessage() {
-      let newMessage = {
+      const newMessage = {
         message: this.message,
         user: this.currentUser
       };
-      this.$socket.emit("eventSent", newMessage)
-      this.message = "";
+      Events.create(newMessage)
+      this.message = ""
     },
     userAvatar: function(id, size = 60) {
       return `https://api.adorable.io/avatars/${size}/${id}.png`
     },
     isCurrentUser(user) {
-      return this.currentUser ? user._id === this.currentUser._id : false
+      return user._id === this.currentUser._id
     },
     formatDate(date) {
       return moment(date).format("h:mm:ss a")
     },
-    async setOfflineUsers() {
-      this.offlineUsers = await users.list({ isOnline: false })
-    },
     async updateCurrentUser() {
-      this.$socket.emit("userUpdated", this.currentUser)
+      return await Users.update(this.currentUser._id, this.currentUser)
     },
     signOut() {
       UserStore.setCurrentUser(null)
       this.disconnectUser()
       this.$router.push({name: 'Home'})
-    },
-    scrollToBottom() {
-      let container = document.querySelector(".chat-history")
-      let scrollHeight = container.scrollHeight
-      container.scrollTop = scrollHeight
     }
   }
 }
@@ -239,9 +168,6 @@ export default {
     .about {
       float: left;
       margin-top: 8px;
-    }
-
-    .about {
       padding-left: 8px;
     }
 
@@ -278,7 +204,7 @@ export default {
         font-size: 16px;
       }
 
-      .chat-num-messages {        
+      .chat-user-status {        
         input {
           color: $gray;
           cursor: pointer;
@@ -313,99 +239,16 @@ export default {
       padding: 30px 30px 20px;
       border-bottom: 2px solid white;
       overflow-y: scroll;
-      max-height: 630px; //TODO: this sucks.
-
-      .event-message {
-        margin-bottom: 20px;
-      }
+      max-height: 630px;
 
       .event-action {
         display: flex;
         justify-content: center;
         margin: 5px 0;
       }
-
-      .message-data {
-        margin-bottom: 10px;
-
-        i {
-          color: lighten($gray, 8%);
-        }
-      }
-
-      .message-data-time {
-        color: lighten($gray, 8%);
-        padding-left: 6px;
-      }
-
-      .user-message {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        align-items: center;
-        align-content: stretch;
-        margin-bottom: 5px;
-
-        &.reverse {
-          flex-direction: row-reverse;
-        }
-
-        img {
-          border-radius: 10px;
-        }
-
-        %message {
-          color: white;
-          padding: 18px 20px;
-          line-height: 26px;
-          font-size: 18px;
-          border-radius: 7px;
-          position: relative;
-
-          &:after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 0;
-            height: 0;
-            border: 15px solid transparent;
-            border-bottom: 0;
-            margin-top: -7.5px;
-          }
-        }
-
-        .my-message {
-          @extend %message;
-          background: $blue;
-          float: right;
-          margin-right: 25px;
-
-          &:after {
-            right: 0;
-            border-left-color: $blue;
-            border-right: 0;
-            margin-right: -15px;
-          }
-        }
-
-        .other-message {
-          @extend %message;
-          background: $green;
-          margin-left: 25px;
-
-
-          &:after {
-            left: 0;
-            border-right-color: $green;
-            border-left: 0;
-            margin-left: -15px;
-          }
-        }
-      }
     }
 
-    .chat-message {
+    .chat-box {
       padding: 30px;
 
       .chat-input {
@@ -417,13 +260,6 @@ export default {
         border-radius: 5px;
         resize: none;
       }
-
-      .fa-file-o,
-      .fa-file-image-o {
-        font-size: 16px;
-        color: gray;
-        cursor: pointer;
-      }
     }
   }
 }
@@ -432,19 +268,10 @@ export default {
   color: $gray;
 }
 
-.online,
-.offline,
-.me {
+.online {
   margin-right: 3px;
   font-size: 10px;
-}
-
-.online {
   color: $green;
-}
-
-.align-right {
-  text-align: right;
 }
 
 </style>
