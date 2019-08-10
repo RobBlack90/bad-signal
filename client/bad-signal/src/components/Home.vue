@@ -14,12 +14,9 @@
       </div>
       <div v-else class="people-list">
         <div class="list">
-          <user-card 
-            v-for="user in offlineUsers" 
-            :key="user._id" 
-            :user="user" 
-            v-bind:showOnlineStatus="false">
-          </user-card>
+          <div class="user" v-for="user in offlineUsers" :key="user._id" @click="connect(user)">
+            <user-card :user="user" v-bind:showOnlineStatus="false" />
+          </div>
         </div>
       </div>
     </div>
@@ -169,6 +166,13 @@ export default {
     .people-list {
       .list {
         padding: 20px;
+        .user {
+          transition: all .2s ease-in-out;
+          &:hover {
+            transform: scale(1.05);
+            cursor: pointer;
+          }
+        }
       }
     }
   }
