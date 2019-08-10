@@ -13,17 +13,14 @@
           <button type="submit" :disabled="!name" @click="connect()">Chat!</button>
       </div>
       <div v-else class="people-list">
-        <ul class="list">
-          <li class="user-grid" v-for="user in offlineUsers" :key="user._id" @click="connect(user)">
-            <img :src="userAvatar(user._id)" alt="avatar" />
-            <div class="about">
-              <div class="name">
-                {{user.name}}
-              </div>
-              <p class="status">{{user.status}}</p>
-            </div>
-          </li>
-        </ul>
+        <div class="list">
+          <user-card 
+            v-for="user in offlineUsers" 
+            :key="user._id" 
+            :user="user" 
+            v-bind:showOnlineStatus="false">
+          </user-card>
+        </div>
       </div>
     </div>
   </div>
@@ -33,9 +30,12 @@
 import Vue from 'vue'
 import { Users } from "@/services/api.js"
 import UserStore from "../stores/UserStore.js"
+import UserCard from './common/UserCard'
+
 
 export default {
 	components: {
+    UserCard
 	},
   data () {
     return {
@@ -168,53 +168,10 @@ export default {
     }
 
     .people-list {
-
-      .user-grid {
-        display: grid;
-        grid-template-columns: 60px 1fr;
-        grid-template-rows: 1fr;
-        grid-template-areas: ". .";
-        transition: all .2s ease-in-out;
-
-        &:hover {
-          transform: scale(1.05);
-          cursor: pointer;
-        }
-      }
-
-      ul {
+      .list {
         padding: 20px;
-        // height: 770px;
-        list-style-type: none;
-
-        li {
-          padding-bottom: 20px;
-        }
-      }
-
-      img {
-        float: left;
-      }
-
-      .about {
-        display: flex;
-        justify-content: space-around;
-        flex-direction: column;
-        margin-top: 8px;
-        padding-left: 8px;
-
-        .name {
-          font-size: 20px;
-        }
-      }
-
-      .status {
-        color: $gray;
       }
     }
-}
-
-
-
+  }
 }
 </style>
