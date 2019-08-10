@@ -32,7 +32,6 @@ import { Users } from "@/services/api.js"
 import UserStore from "../stores/UserStore.js"
 import UserCard from './common/UserCard'
 
-
 export default {
 	components: {
     UserCard
