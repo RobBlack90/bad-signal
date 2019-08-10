@@ -31,8 +31,8 @@
 
 import { Users } from "@/services/api.js"
 import { Events } from "@/services/api.js"
+import UserStore from "../stores/UserStore.js"
 import ChatMessage from './ChatMessage'
-
 
 export default {
   name: 'Chat',
@@ -53,7 +53,8 @@ export default {
       return user._id === this.currentUser._id
     },
     async updateCurrentUser() {
-      return await Users.update(this.currentUser._id, this.currentUser)
+      await Users.update(this.currentUser._id, this.currentUser)
+      UserStore.setCurrentUser(this.currentUser)
     },
     sendMessage() {
       const newMessage = {
