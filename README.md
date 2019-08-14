@@ -3,6 +3,11 @@
 # Bad Signal
 _A surprisingly accurate chat app._
 
+## Why?
+🤷‍♂️
+
+Mostly, I just wanted to play around with sockets. The traditional server endpoints follow a REST architecture. On the client side, I needed a way to save the state of `currentUser`, but felt that using [Vuex](https://vuex.vuejs.org/) would be overkill. Taking advantage of the browser's session storage seemed work just fine. I also heavily borrowed the UI from [this](https://codepen.io/drehimself/pen/KdXwxR) codepen.
+
 ## Stack Used
 Built on a MEVN stack _(Mongo, Express, Vue, Node)_. _Socket.io_ handles the sockets. On the front end, _Axios_ makes the HTTP Requests easier, and _SCSS_ helps out with the styling.
 
